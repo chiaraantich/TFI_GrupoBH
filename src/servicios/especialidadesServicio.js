@@ -1,4 +1,6 @@
-import Especialidades from "../bd/especialidades.js"
+import Especialidades from "../db/especialidades.js"
+import apicache from "apicache";
+
 
 export default class EspecialidadesServicio {
 
@@ -7,22 +9,41 @@ export default class EspecialidadesServicio {
     }
 
     buscarTodas = () => {
-        return this.especialidades.buscarTodas();
+        return this.especialidades.buscarTodas();    
     }
 
     buscarPorId = (id_especialidad) => {
         return this.especialidades.buscarPorId(id_especialidad);
     }
 
-    crear = (nombre) => {
-        return this.especialidades.crear(nombre);
+    modificar = async (id_especialidad, especialidad) => {
+        const existe = await this.especialidades.buscarPorId(id_especialidad);
+        if(existe.length === 0) {
+            return null;
+        }
+        
+        const modificado = await this.especialidades.modificar(id_especialidad, especialidad);
+        
+        apicache.clear();
+        
+        return this.buscarPorId(modificado);
     }
- 
-    modificar = (id_especialidad, nombre) => {
-        return this.especialidades.modificar(id_especialidad, nombre);
+
+    crear = async (especialidad) => {
+        const nuevo_id = await this.especialidades.crear(especialidad);
+        
+        apicache.clear();
+
+        return this.buscarPorId(nuevo_id);
     }
- 
-    borrar = (id_especialidad) => {
-        return this.especialidades.borrar(id_especialidad);
+
+    eliminar = async (id_especialidad) => {
+        const existe = await this.especialidades.buscarPorId(id_especialidad);
+        if(existe.length === 0) {
+            return null;
+        }
+        
+        apicache.clear();
+        return this.especialidades.eliminar(id_especialidad);
     }
 }

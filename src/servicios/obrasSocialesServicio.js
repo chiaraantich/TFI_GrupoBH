@@ -1,28 +1,42 @@
-import ObrasSociales from "../bd/obrasSociales.js";
+import ObrasSociales from "../db/obrasSociales.js"
+import ObrasSocialesRespuestaDTO from "../dtos/obrasSocialesRespuestaDTO.js";
 
 export default class ObrasSocialesServicio {
 
-    constructor () {
+    constructor(){
         this.obrasSociales = new ObrasSociales();
     }
 
-    buscarTodas = () => {
-        return this.obrasSociales.buscarTodas();
+    buscarTodas = async () => {
+        const datos = await this.obrasSociales.buscarTodas();    
+        return datos.map(row => new ObrasSocialesRespuestaDTO(row));
     }
 
-    buscarPorId = (id_obra_social) => {
-        return this.obrasSociales.buscarPorId(id_obra_social);
+    buscarPorId = async (idObraSocial) => {
+        return this.obrasSociales.buscarPorId(idObraSocial);        
     }
 
-    crear = (nombre, descripcion, porcentaje_descuento, es_particular) => {
-        return this.obrasSociales.crear(nombre, descripcion, porcentaje_descuento, es_particular);
+    modificar = async (idObraSocial, obraSocial) => {
+        
+        const existe = await this.obrasSociales.buscarPorId(idObraSocial);
+        if(existe.length === 0) {
+            return null;
+        }
+        
+        const modificada = await this.obrasSociales.modificar(idObraSocial, obraSocial);
+        return this.buscarPorId(modificada);
     }
 
-    modificar = (id_obra_social, nombre, descripcion, porcentaje_descuento, es_particular) => {
-        return this.obrasSociales.modificar(id_obra_social, nombre, descripcion, porcentaje_descuento, es_particular);
+    crear = async (obraSocial) => {
+        const nuevo_id = await this.obrasSociales.crear(obraSocial);
+        return this.buscarPorId(nuevo_id);
     }
 
-    borrar = (id_obra_social) => {
-        return this.obrasSociales.borrar(id_obra_social);
+    eliminar = async (idObraSocial) => {
+        const existe = await this.obrasSociales.buscarPorId(idObraSocial);
+        if(existe.length === 0) {
+            return null;
+        }
+        return this.obrasSociales.eliminar(idObraSocial);
     }
 }
